@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "lexguard-super-secret-jwt-key-2024-change-this-please"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days
-    CORS_ORIGINS: str = '["http://localhost:3000","http://127.0.0.1:3000","https://lexguard.vercel.app","https://lexguard-frontend.vercel.app"]'
+    CORS_ORIGINS: str = '["http://localhost:3000","http://localhost:3001","http://127.0.0.1:3000","https://lexguard.vercel.app","https://lexguard-frontend.vercel.app","https://lexguard-frontend-22259513516.us-central1.run.app","https://lexguard-backend-22259513516.us-central1.run.app"]'
     MAX_FILE_SIZE_MB: int = 20
     GROQ_MODEL: str = "llama-3.3-70b-versatile"
     GEMINI_MODEL: str = "gemini-2.0-flash"
