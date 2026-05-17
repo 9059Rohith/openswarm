@@ -1,0 +1,62 @@
+name: Deploy Frontend to Cloud Run
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+
+env:
+  PROJECT_ID: lateral-berm-496606-k2
+  SERVICE: lexguard-frontend
+  REGION: us-central1
+  IMAGE: gcr.io/lateral-berm-496606-k2/lexguard-frontend
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auth GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://lexguard-rboc.onrender.com \
+            -t $IMAGE:${{ github.sha }} \
+            ./frontend
+
+      - name: Push image
+        run: docker push $IMAGE:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy $SERVICE \
+            --image $IMAGE:${{ github.sha }} \
+            --platform managed \
+            --region $REGION \
+            --allow-unauthenticated \
+            --port 8080 \
+            --project $PROJECT_ID \
+            --quiet
+
+      - name: Show Service URL
+        run: |
+          gcloud run services describe $SERVICE \
+            --platform managed \
+            --region $REGION \
+            --project $PROJECT_ID \
+            --format "value(status.url)"
