@@ -17,13 +17,13 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
+  const demoCredentials = { email: 'demo@lexguard.ai', password: 'demo1234' }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const signIn = async (credentials = form) => {
     setError('')
     setLoading(true)
     try {
-      const res = await authApi.login({ email: form.email, password: form.password })
+      const res = await authApi.login({ email: credentials.email, password: credentials.password })
       setAuth(res.user, res.access_token)
       // Set cookie for middleware
       document.cookie = `lexguard_token=${res.access_token}; path=/; max-age=604800; SameSite=Lax`
@@ -35,6 +35,16 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    signIn()
+  }
+
+  const handleDemoLogin = () => {
+    setForm(demoCredentials)
+    signIn(demoCredentials)
   }
 
   return (
@@ -124,15 +134,19 @@ export default function LoginPage() {
 
           {/* Demo credentials */}
           <div className="mt-4 p-3 bg-gold/5 border border-gold/20 rounded-lg">
-            <p className="text-xs text-text-secondary text-center mb-2 font-medium">Demo Account</p>
-            <div className="flex gap-2">
+            <p className="text-xs text-text-secondary text-center mb-2 font-medium">Evaluator Demo Account</p>
+            <div className="grid grid-cols-1 gap-2">
               <button
                 type="button"
-                onClick={() => setForm({ email: 'demo@lexguard.ai', password: 'demo1234' })}
-                className="flex-1 text-xs text-gold hover:text-gold-hover bg-gold/10 hover:bg-gold/20 border border-gold/20 rounded-md py-1.5 transition-all"
+                onClick={handleDemoLogin}
+                disabled={loading}
+                className="text-sm font-semibold text-bg-base bg-gold hover:bg-gold-hover disabled:opacity-60 border border-gold/20 rounded-md py-2 transition-all"
               >
-                Fill Demo Credentials
+                Continue with Demo
               </button>
+              <p className="text-[11px] text-text-muted text-center">
+                {demoCredentials.email} / {demoCredentials.password}
+              </p>
             </div>
           </div>
 

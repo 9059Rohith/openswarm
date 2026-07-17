@@ -1,18 +1,22 @@
-﻿import asyncio
-import traceback
-from typing import Optional, List
-from sqlalchemy.ext.asyncio import AsyncSession
+﻿"""
+LexGuard analysis pipeline entrypoint.
+
+External signature UNCHANGED for routers:
+  run_analysis_pipeline(contract_id, file_path)
+
+Stage 2: analysis steps are coordinated by swarm.orchestrator_bridge (placeholder
+OpenSwarm-ready adapter). Existing services are unchanged; this module persists results.
+"""
+
+from typing import List
+
 from sqlalchemy import select
 
 from models.contract import Contract, Clause
-from services.parser import DocumentParser
-from services.groq_client import groq_client
-from services.risk_scorer import score_clauses, compute_cri, classify_cri
-from services.rag_engine import rag_engine, RAGEngine
-from services.prompts import SUMMARY_SYSTEM, CLAUSE_EXTRACTION_SYSTEM
-from services.contradiction_detector import detect_contradictions
 from database import AsyncSessionLocal
-from config import settings
+from services.groq_client import groq_client
+from services.prompts import CLAUSE_EXTRACTION_SYSTEM
+from services.rag_engine import RAGEngine
 
 
 async def extract_clauses_with_groq(full_text: str) -> List[dict]:
@@ -20,6 +24,9 @@ async def extract_clauses_with_groq(full_text: str) -> List[dict]:
     Use Groq LLM (llama-3.3-70b) to extract and risk-score every clause.
     Falls back to RAG rule-based extraction if LLM call fails.
     Handles long contracts by chunking: sends first 50 KB then any remainder.
+
+    Kept here (unchanged behavior) so Clause Analysis Team can call it without
+    duplicating extraction logic into swarm wrappers.
     """
     MAX_CHARS = 50_000
     text_a = full_text[:MAX_CHARS]
@@ -74,98 +81,21 @@ async def update_contract_status(contract_id: str, status: str, **kwargs):
 
 async def run_analysis_pipeline(contract_id: str, file_path: str):
     """
-    Stateful 8-step analysis pipeline:
+    Analysis pipeline entry — signature preserved for BackgroundTasks / routers.
 
-    1. Parse document (layout-aware, with bounding boxes + OCR fallback)
-    2. Detect contract type (keyword-based RAGEngine)
-    3. Extract counterparty + jurisdiction (heuristic regex from parser)
-    4. Extract & analyze clauses (RAG semantic search + rule-based scoring)
-    5. Compute aggregate scores (CRI with contract-type-weighted categories)
-    6. Detect pairwise contradictions (logic auditor)
-    7. Generate what-if scenarios (rule-based templates)
-    8. Executive summary (Groq LLM — only LLM call)
-    9. Persist to SQLite
+    Stage 2: delegates coordination to swarm.orchestrator_bridge.run_matter
+    (placeholder adapter). Persistence remains here so DB models stay untouched.
     """
     try:
-        # ── STEP 1: PARSE ────────────────────────────────────────────────
         await update_contract_status(contract_id, "processing")
-        parsed = DocumentParser.parse(file_path, upload_dir=settings.UPLOAD_DIR)
-        full_text = parsed.full_text
-        page_count = parsed.page_count
-        counterparty = parsed.counterparty or ""
-        jurisdiction = parsed.jurisdiction or ""
 
-        if not full_text.strip():
-            await update_contract_status(
-                contract_id,
-                "failed",
-                error_message="Could not extract text from document.",
-            )
-            return
+        # OPENSWARM_SWAP: tomorrow replace this import/call with official OpenSwarm
+        # runner while keeping the MatterResult → DB mapping below.
+        from swarm.orchestrator_bridge import run_matter
 
-        # ── STEP 2: CONTRACT-TYPE DETECTION ───────────────────────────────
-        engine = RAGEngine()
-        contract_type = engine.detect_contract_type(full_text)
+        matter = await run_matter(contract_id, file_path)
 
-        # ── STEP 3: LLM CLAUSE EXTRACTION (Groq) ─────────────────────────
-        raw_clauses = await extract_clauses_with_groq(full_text)
-
-        # ── STEP 4: RISK SCORING (with environmental modifier) ────────────
-        scored_clauses = score_clauses(raw_clauses, contract_type=contract_type)
-        cri = compute_cri(scored_clauses, contract_type=contract_type)
-        risk_level = classify_cri(cri)
-        high_count = sum(1 for c in scored_clauses if c.get("risk_level") == "high")
-        moderate_count = sum(1 for c in scored_clauses if c.get("risk_level") == "moderate")
-        low_count = sum(1 for c in scored_clauses if c.get("risk_level") == "low")
-
-        # ── STEP 5: CONTRADICTION DETECTION ──────────────────────────────
-        contradictions = detect_contradictions(scored_clauses)
-
-        # ── STEP 6: SCENARIO GENERATION ───────────────────────────────────
-        scenarios = engine.generate_scenarios(scored_clauses)
-
-        # ── STEP 7: EXECUTIVE SUMMARY (only Groq call) ───────────────────
-        contradiction_summary = ""
-        if contradictions:
-            contradiction_summary = f"\nLogical Contradictions Detected: {len(contradictions)}\n"
-            for c in contradictions[:3]:
-                contradiction_summary += f"- [{c['category']}] {c['description'][:100]}...\n"
-
-        legal_review_count = sum(1 for c in scored_clauses if c.get("requires_legal_review"))
-
-        summary_context = (
-            f"Contract Type: {contract_type}\n"
-            f"Counterparty: {counterparty or 'Unknown'}\n"
-            f"Governing Law: {jurisdiction or 'Not specified'}\n"
-            f"Overall Risk Level: {risk_level.upper()} (CRI: {cri:.0f}/100)\n"
-            f"High Risk Clauses: {high_count}\n"
-            f"Moderate Risk Clauses: {moderate_count}\n"
-            f"Low Risk Clauses: {low_count}\n"
-            f"Clauses Requiring Legal Review: {legal_review_count}\n"
-            f"{contradiction_summary}\n"
-            f"Top Issues:\n"
-            + "\n".join(
-                f"- {c.get('clause_type')}: {c.get('why_risky', '')}"
-                for c in scored_clauses[:5]
-            )
-        )
-        executive_summary = await groq_client.complete(
-            SUMMARY_SYSTEM,
-            summary_context,
-            temperature=0.3,
-            max_tokens=350,
-        )
-
-        # ── STEP 8: PYDANTIC VALIDATION FALLBACK ─────────────────────────
-        # Ensure executive_summary is a non-empty string, fallback to template
-        if not executive_summary or len(executive_summary.strip()) < 20:
-            executive_summary = (
-                f"This {contract_type} contract carries a {risk_level.upper()} overall risk "
-                f"(CRI: {cri:.0f}/100) with {high_count} high-risk clauses identified. "
-                f"{'Immediate legal review is recommended.' if risk_level == 'high' else 'Standard review is advised.'}"
-            )
-
-        # ── STEP 9: SAVE TO DB ────────────────────────────────────────────
+        # ── Persist (unchanged schema / fields) ─────────────────────────────
         async with AsyncSessionLocal() as db:
             result = await db.execute(select(Contract).where(Contract.id == contract_id))
             contract = result.scalar_one_or_none()
@@ -173,25 +103,23 @@ async def run_analysis_pipeline(contract_id: str, file_path: str):
                 return
 
             contract.status = "complete"
-            contract.full_text = full_text
-            contract.page_count = page_count
-            contract.contract_type = contract_type
-            contract.counterparty = counterparty
-            contract.jurisdiction = jurisdiction
-            contract.aggregate_risk_index = cri
-            contract.risk_level = risk_level
-            contract.high_count = high_count
-            contract.moderate_count = moderate_count
-            contract.low_count = low_count
-            contract.executive_summary = executive_summary.strip()
-            contract.scenarios_json = scenarios
-            contract.contradictions_json = contradictions
+            contract.full_text = matter.full_text
+            contract.page_count = matter.page_count
+            contract.contract_type = matter.contract_type
+            contract.counterparty = matter.counterparty
+            contract.jurisdiction = matter.jurisdiction
+            contract.aggregate_risk_index = matter.cri
+            contract.risk_level = matter.risk_level
+            contract.high_count = matter.high_count
+            contract.moderate_count = matter.moderate_count
+            contract.low_count = matter.low_count
+            contract.executive_summary = matter.executive_summary.strip()
+            contract.scenarios_json = matter.scenarios
+            contract.contradictions_json = matter.contradictions
 
-            # Assign bounding boxes from parser output, distributed to clauses
-            bboxes = parsed.bounding_boxes or []
+            bboxes = matter.bounding_boxes or []
 
-            for i, clause_data in enumerate(scored_clauses):
-                # Assign a bounding box from the parsed data if available
+            for i, clause_data in enumerate(matter.scored_clauses):
                 bbox = bboxes[i % len(bboxes)] if bboxes else None
 
                 clause = Clause(
@@ -220,4 +148,3 @@ async def run_analysis_pipeline(contract_id: str, file_path: str):
         await update_contract_status(
             contract_id, "failed", error_message=str(e)[:500]
         )
-

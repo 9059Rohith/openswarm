@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { RiskBadge } from '@/components/ui/Badge'
 import { ContractCardSkeleton } from '@/components/ui/LoadingSkeleton'
+import { DailyLegalBrief } from '@/components/dashboard/DailyLegalBrief'
+import { RecommendationPanel } from '@/components/dashboard/RecommendationPanel'
 import { riskColor, formatDate, truncate } from '@/lib/utils'
 
 function MiniGauge({ score }: { score: number }) {
@@ -111,6 +113,9 @@ export default function DashboardPage() {
           )
         })}
       </motion.div>
+
+      <DailyLegalBrief />
+      <RecommendationPanel />
 
       {/* Contracts Grid */}
       <div className="mb-4 flex items-center justify-between">

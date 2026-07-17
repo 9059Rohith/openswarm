@@ -6,7 +6,8 @@ import os
 
 from config import settings
 from database import init_db
-from routers import auth, analyze, contracts, chat, playbooks, export
+from routers import auth, analyze, contracts, chat, playbooks, export, recommendations, daily_brief
+from routers import swarm_status
 
 
 @asynccontextmanager
@@ -14,13 +15,13 @@ async def lifespan(app: FastAPI):
     # Startup
     await init_db()
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    print("✅ LexGuard Backend started successfully")
+    print("[OK] LexGuard Backend started successfully")
     print(f"   Database: {settings.DATABASE_URL}")
     print(f"   Upload dir: {settings.UPLOAD_DIR}")
     print(f"   Groq model: {settings.GROQ_MODEL}")
     yield
     # Shutdown
-    print("👋 LexGuard Backend shutting down")
+    print("[SHUTDOWN] LexGuard Backend shutting down")
 
 
 app = FastAPI(
@@ -47,6 +48,9 @@ app.include_router(chat.router)
 app.include_router(contracts.router)
 app.include_router(playbooks.router)
 app.include_router(export.router)
+app.include_router(swarm_status.router)
+app.include_router(recommendations.router)
+app.include_router(daily_brief.router)
 
 
 @app.get("/health")

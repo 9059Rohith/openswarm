@@ -11,6 +11,37 @@ from config import settings
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
+DEMO_EMAIL = "demo@lexguard.ai"
+DEMO_PASSWORD = "demo1234"
+DEMO_FULL_NAME = "Demo User"
+
+
+def is_demo_login(credentials: UserLogin) -> bool:
+    return (
+        credentials.email.strip().lower() == DEMO_EMAIL
+        and credentials.password == DEMO_PASSWORD
+    )
+
+
+async def get_or_create_demo_user(db: AsyncSession) -> User:
+    result = await db.execute(select(User).where(User.email == DEMO_EMAIL))
+    user = result.scalar_one_or_none()
+    if user:
+        user.full_name = DEMO_FULL_NAME
+        user.hashed_password = get_password_hash(DEMO_PASSWORD)
+        user.is_active = True
+    else:
+        user = User(
+            email=DEMO_EMAIL,
+            full_name=DEMO_FULL_NAME,
+            hashed_password=get_password_hash(DEMO_PASSWORD),
+            is_active=True,
+        )
+        db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
 
 @router.post("/register", response_model=Token)
 async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
@@ -45,14 +76,17 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == credentials.email))
-    user = result.scalar_one_or_none()
+    if is_demo_login(credentials):
+        user = await get_or_create_demo_user(db)
+    else:
+        result = await db.execute(select(User).where(User.email == credentials.email))
+        user = result.scalar_one_or_none()
 
-    if not user or not verify_password(credentials.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-        )
+        if not user or not verify_password(credentials.password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password",
+            )
 
     if not user.is_active:
         raise HTTPException(

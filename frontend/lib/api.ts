@@ -8,6 +8,8 @@ import type {
   Playbook,
   AuthToken,
   User,
+  RecommendationsResponse,
+  DailyBriefResponse,
 } from './types'
 import { useAuthStore } from './store'
 
@@ -120,6 +122,16 @@ export const contractsApi = {
 }
 
 // ─── Playbooks ────────────────────────────────────────────────────────────────
+export const recommendationsApi = {
+  list: () =>
+    api.get<RecommendationsResponse>('/api/recommendations').then((r) => r.data),
+}
+
+export const dailyBriefApi = {
+  get: () =>
+    api.get<DailyBriefResponse>('/api/daily-brief').then((r) => r.data),
+}
+
 export const playbooksApi = {
   list: () =>
     api.get<Playbook[]>('/api/playbooks').then((r) => r.data),
@@ -170,6 +182,8 @@ export function useAnalysisStatus(id: string, enabled: boolean) {
       if (data?.status === 'complete') {
         qc.invalidateQueries({ queryKey: ['contract', id] })
         qc.invalidateQueries({ queryKey: ['contracts'] })
+        qc.invalidateQueries({ queryKey: ['recommendations'] })
+        qc.invalidateQueries({ queryKey: ['daily-brief'] })
         return false
       }
       if (data?.status === 'failed') {
@@ -188,6 +202,20 @@ export function useStats() {
   })
 }
 
+export function useRecommendations() {
+  return useQuery({
+    queryKey: ['recommendations'],
+    queryFn: () => recommendationsApi.list(),
+  })
+}
+
+export function useDailyBrief() {
+  return useQuery({
+    queryKey: ['daily-brief'],
+    queryFn: () => dailyBriefApi.get(),
+  })
+}
+
 export function usePlaybooks() {
   return useQuery({
     queryKey: ['playbooks'],
@@ -202,6 +230,8 @@ export function useDeleteContract() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['contracts'] })
       qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['recommendations'] })
+      qc.invalidateQueries({ queryKey: ['daily-brief'] })
     },
   })
 }
@@ -213,6 +243,8 @@ export function useUploadContract() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['contracts'] })
       qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['recommendations'] })
+      qc.invalidateQueries({ queryKey: ['daily-brief'] })
     },
   })
 }

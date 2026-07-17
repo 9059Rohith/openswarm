@@ -1,6 +1,3 @@
 {
-  "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://lexguard-rboc.onrender.com"
-  }
+  "framework": "nextjs"
 }

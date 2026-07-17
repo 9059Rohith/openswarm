@@ -103,6 +103,68 @@ export interface Stats {
   total_clauses_flagged: number
 }
 
+export type RecommendationPriority = 'high' | 'medium' | 'low'
+
+export interface Recommendation {
+  id: string
+  action: string
+  reason: string
+  priority: RecommendationPriority
+  priority_label: 'High Priority' | 'Medium Priority' | 'Low Priority'
+  category: string
+  related_contract_id: string | null
+  related_contract_name: string | null
+  suggested_due_date: string
+}
+
+export interface RecommendationsResponse {
+  recommendations: Recommendation[]
+  categories: Record<'High Priority' | 'Medium Priority' | 'Low Priority', Recommendation[]>
+  total: number
+  high_count: number
+  medium_count: number
+  low_count: number
+  agent: Record<string, unknown>
+  agent_name: string
+}
+
+export type DailyTaskPriority = 'Critical' | 'High' | 'Medium' | 'Low'
+
+export interface DailyTask {
+  id: string
+  title: string
+  priority: DailyTaskPriority
+  due_label: string
+  category: string
+  reason: string
+  related_contract_id: string | null
+  related_contract_name: string | null
+  due_date: string
+}
+
+export interface DailyBriefResponse {
+  agent: Record<string, unknown>
+  recommendation_agent: Record<string, unknown>
+  agent_name: string
+  brief_date: string
+  chief_legal_officer_summary: string
+  todays_tasks: DailyTask[]
+  todays_legal_priorities: DailyTask[]
+  pending_contract_reviews: any[]
+  high_risk_contracts: any[]
+  upcoming_deadlines: DailyTask[]
+  pending_signatures: any[]
+  compliance_alerts: DailyTask[]
+  privacy_alerts: DailyTask[]
+  contract_expiry_alerts: any[]
+  recommended_actions: Recommendation[]
+  new_legal_recommendations: Recommendation[]
+  risk_trend: string
+  weekly_risk_score: number
+  recent_activities: any[]
+  priority_counts: Record<DailyTaskPriority, number>
+}
+
 export interface ChatMessage {
   id: string
   role: 'user' | 'assistant'

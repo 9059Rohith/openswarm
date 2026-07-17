@@ -17,6 +17,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ full_name: '', email: '', password: '', confirm: '' })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const demoCredentials = { email: 'demo@lexguard.ai', password: 'demo1234' }
 
   const validate = () => {
     const errs: Record<string, string> = {}
@@ -45,6 +46,21 @@ export default function SignupPage() {
     } catch (err: any) {
       const msg = err?.response?.data?.detail || 'Registration failed'
       toast.error(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDemoLogin = async () => {
+    setLoading(true)
+    try {
+      const res = await authApi.login(demoCredentials)
+      setAuth(res.user, res.access_token)
+      document.cookie = `lexguard_token=${res.access_token}; path=/; max-age=604800; SameSite=Lax`
+      toast.success('Demo workspace ready')
+      router.push('/dashboard')
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || 'Demo login failed')
     } finally {
       setLoading(false)
     }
@@ -157,6 +173,14 @@ export default function SignupPage() {
           </form>
 
           <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              disabled={loading}
+              className="mb-4 w-full rounded-md border border-gold/20 bg-gold/10 py-2 text-sm font-semibold text-gold transition-all hover:bg-gold/20 hover:text-gold-hover disabled:opacity-60"
+            >
+              Continue with Demo
+            </button>
             <p className="text-text-muted text-sm">
               Already have an account?{' '}
               <Link href="/login" className="text-gold hover:text-gold-hover font-medium transition-colors">

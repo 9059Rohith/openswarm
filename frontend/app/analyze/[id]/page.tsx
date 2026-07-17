@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -14,6 +14,7 @@ import { ClauseList } from '@/components/analysis/ClauseList'
 import { ChatPanel } from '@/components/chat/ChatPanel'
 import { RedlineCard } from '@/components/redline/RedlineCard'
 import { ScenariosTab } from '@/components/workspace/ScenariosTab'
+import { SwarmOrganization } from '@/components/analysis/SwarmOrganization'
 import { useContractDetail, useAnalysisStatus } from '@/lib/api'
 import { useAuthStore, useAppStore } from '@/lib/store'
 import { Spinner } from '@/components/ui/Spinner'
@@ -238,7 +239,13 @@ function AnalysisContent({ contractId, contract }: any) {
       </div>
 
       {/* Right: Agentic Workspace Panel (2/3) */}
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
+        {/* AI Legal Organization — Swarm Visualization */}
+        <SwarmOrganization
+          contractId={contractId}
+          contractStatus={contract?.status ?? 'complete'}
+        />
+
         {/* Tabs */}
         <div className="flex border-b border-white/[0.06] flex-shrink-0 overflow-x-auto">
           {TABS.map((t) => {
@@ -316,7 +323,7 @@ function AnalysisContent({ contractId, contract }: any) {
 
               {tab === 'chat' && (
                 <div className="h-full">
-                  <ChatPanel contractId={contractId} />
+                  <ChatPanel contractId={contractId} executiveSummary={contract?.executive_summary ?? ''} />
                 </div>
               )}
 
@@ -349,30 +356,23 @@ function AnalysisContent({ contractId, contract }: any) {
   )
 }
 
-function AnalyzingState({ progress }: { progress: string }) {
+function AnalyzingState({ progress, contractId }: { progress: string; contractId: string }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center">
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-        className="w-16 h-16 rounded-full border-2 border-gold/30 border-t-gold mb-6"
-      />
-      <h2 className="text-xl font-semibold text-text-primary mb-2">Analyzing Contract...</h2>
-      <p className="text-text-secondary text-sm max-w-sm">{progress || 'Running AI analysis pipeline. This takes 30-60 seconds.'}</p>
-      <div className="mt-6 flex flex-col gap-2 text-left text-xs text-text-muted font-mono">
-        {[
-          '✓ Document parsed (layout-aware)',
-          '✓ Contract type detected',
-          '⟳ Multi-agent clause extraction...',
-          '… Quantitative risk scoring (CRI)',
-          '… Contradiction audit',
-          '… Generating redline suggestions',
-          '… Building executive summary',
-        ].map((step, i) => (
-          <motion.div key={step} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.4 }}>
-            {step}
-          </motion.div>
-        ))}
+    <div className="flex flex-col h-full overflow-y-auto">
+      {/* Swarm Organization — live during analysis */}
+      <div className="border-b border-white/[0.06]">
+        <SwarmOrganization contractId={contractId} contractStatus="processing" />
+      </div>
+
+      {/* Original spinner UI */}
+      <div className="flex flex-col items-center justify-center flex-1 text-center p-8">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+          className="w-16 h-16 rounded-full border-2 border-gold/30 border-t-gold mb-6"
+        />
+        <h2 className="text-xl font-semibold text-text-primary mb-2">Analyzing Contract...</h2>
+        <p className="text-text-secondary text-sm max-w-sm">{progress || 'Running AI analysis pipeline. This takes 30-60 seconds.'}</p>
       </div>
     </div>
   )
@@ -425,7 +425,7 @@ export default function AnalyzePage() {
           ) : isComplete && contract ? (
             <AnalysisContent contractId={contractId} contract={contract} />
           ) : (
-            <AnalyzingState progress={status?.message ?? ''} />
+            <AnalyzingState progress={status?.message ?? ''} contractId={contractId} />
           )}
         </div>
       </main>
