@@ -9,16 +9,22 @@
    - `GROQ_API_KEY`
    - `GEMINI_API_KEY`
    - `CORS_ORIGINS`
-5. Use this value for `CORS_ORIGINS` after the frontend is deployed:
+5. Before the frontend is deployed, this value is enough for local testing:
 
 ```json
-["http://localhost:3000","https://YOUR_FRONTEND_DOMAIN.vercel.app"]
+["http://localhost:3000","http://127.0.0.1:3000"]
 ```
 
-6. Confirm backend health:
+6. After Vercel gives you the frontend URL, update `CORS_ORIGINS` to include it:
+
+```json
+["http://localhost:3000","http://127.0.0.1:3000","https://YOUR_FRONTEND_DOMAIN.vercel.app"]
+```
+
+7. Confirm backend health:
 
 ```text
-https://YOUR_RENDER_SERVICE.onrender.com/health
+https://openswarm.onrender.com/health
 ```
 
 ## Frontend on Vercel
@@ -33,10 +39,11 @@ frontend
 3. Add this Vercel environment variable:
 
 ```text
-NEXT_PUBLIC_API_URL=https://YOUR_RENDER_SERVICE.onrender.com
+NEXT_PUBLIC_API_URL=https://openswarm.onrender.com
 ```
 
 4. Deploy.
+5. After deployment, copy the Vercel URL and add it to Render `CORS_ORIGINS`.
 
 ## Demo Login
 
