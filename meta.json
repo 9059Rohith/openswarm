@@ -1,0 +1,27 @@
+{
+  "name": "LexGuard",
+  "description": "AI-powered contract intelligence platform with OpenSwarm-ready multi-agent orchestration.",
+  "repository": "https://github.com/9059Rohith/openswarm",
+  "version": "1.0.0",
+  "frontend": {
+    "path": "frontend",
+    "url": "https://openswarm.vercel.app/",
+    "framework": "Next.js 14"
+  },
+  "backend": {
+    "path": "backend",
+    "url": "https://openswarm.onrender.com/",
+    "framework": "FastAPI",
+    "entrypoint": "backend.main:app"
+  },
+  "swarm": {
+    "statusEndpoint": "/api/swarm/status/{contract_id}",
+    "analysisEndpoint": "/api/analyze/upload",
+    "pollIntervalMs": 1000,
+    "statusModel": "in-memory"
+  },
+  "deployment": {
+    "frontendHost": "Vercel",
+    "backendHost": "Render"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/9059Rohith/openswarm/schema.json",
+  "title": "LexGuard OpenSwarm App Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "description", "repository", "version", "frontend", "backend", "swarm", "deployment"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "repository": { "type": "string", "format": "uri" },
+    "version": { "type": "string", "minLength": 1 },
+    "frontend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "url", "framework"],
+      "properties": {
+        "path": { "type": "string", "const": "frontend" },
+        "url": { "type": "string", "format": "uri" },
+        "framework": { "type": "string", "const": "Next.js 14" }
+      }
+    },
+    "backend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "url", "framework", "entrypoint"],
+      "properties": {
+        "path": { "type": "string", "const": "backend" },
+        "url": { "type": "string", "format": "uri" },
+        "framework": { "type": "string", "const": "FastAPI" },
+        "entrypoint": { "type": "string", "const": "backend.main:app" }
+      }
+    },
+    "swarm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statusEndpoint", "analysisEndpoint", "pollIntervalMs", "statusModel"],
+      "properties": {
+        "statusEndpoint": { "type": "string", "const": "/api/swarm/status/{contract_id}" },
+        "analysisEndpoint": { "type": "string", "const": "/api/analyze/upload" },
+        "pollIntervalMs": { "type": "integer", "minimum": 1 },
+        "statusModel": { "type": "string", "const": "in-memory" }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frontendHost", "backendHost"],
+      "properties": {
+        "frontendHost": { "type": "string", "const": "Vercel" },
+        "backendHost": { "type": "string", "const": "Render" }
+      }
+    }
+  }
+}

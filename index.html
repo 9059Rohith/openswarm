@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LexGuard OpenSwarm App</title>
+    <meta
+      name="description"
+      content="LexGuard is an AI-powered contract intelligence platform with OpenSwarm-ready multi-agent orchestration."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #0b0b10;
+        color: #f0ede8;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at top, #141420 0%, #0b0b10 60%);
+      }
+      main {
+        width: min(720px, calc(100vw - 32px));
+        padding: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        background: rgba(17, 17, 24, 0.9);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 2.25rem;
+      }
+      p {
+        line-height: 1.6;
+        color: #c9c4bc;
+      }
+      a {
+        color: #e8c547;
+        text-decoration: none;
+      }
+      ul {
+        padding-left: 20px;
+        line-height: 1.8;
+      }
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 20px;
+      }
+      .pill {
+        display: inline-flex;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>LexGuard OpenSwarm App</h1>
+      <p>
+        LexGuard is the deployed Next.js and FastAPI project in this repository.
+        OpenSwarm uses the same checked in code, so the app stays version controlled
+        after push and redeploy.
+      </p>
+      <ul>
+        <li>Frontend: <a href="https://openswarm.vercel.app/">https://openswarm.vercel.app/</a></li>
+        <li>Backend: <a href="https://openswarm.onrender.com/">https://openswarm.onrender.com/</a></li>
+        <li>Swarm status: <code>/api/swarm/status/{contract_id}</code></li>
+        <li>Analysis trigger: <code>/api/analyze/upload</code></li>
+      </ul>
+      <div class="links">
+        <span class="pill">Next.js frontend</span>
+        <span class="pill">FastAPI backend</span>
+        <span class="pill">OpenSwarm manifest included</span>
+      </div>
+    </main>
+  </body>
+</html>
