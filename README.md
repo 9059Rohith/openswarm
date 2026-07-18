@@ -16,9 +16,9 @@
 
 <br/>
 
-[![Frontend](https://img.shields.io/badge/🌐_FRONTEND-lexguard--frontend--22259513516.us--central1.run.app-00C896?style=for-the-badge)](https://lexguard-frontend-22259513516.us-central1.run.app)
-[![Backend](https://img.shields.io/badge/⚙️_BACKEND_API-lexguard--backend--22259513516.us--central1.run.app-4A90E2?style=for-the-badge)](https://lexguard-backend-22259513516.us-central1.run.app)
-[![Health](https://img.shields.io/badge/🟢_STATUS-100%25_OPERATIONAL-00C896?style=for-the-badge)](https://lexguard-backend-22259513516.us-central1.run.app/health)
+[![Frontend](https://img.shields.io/badge/🌐_LIVE_APP-openswarm.vercel.app-00C896?style=for-the-badge)](https://openswarm.vercel.app/)
+[![Backend](https://img.shields.io/badge/⚙️_BACKEND_API-openswarm.onrender.com-4A90E2?style=for-the-badge)](https://openswarm.onrender.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-9059Rohith%2Fopenswarm-181717?style=for-the-badge&logo=github)](https://github.com/9059Rohith/openswarm)
 [![Completion](https://img.shields.io/badge/✅_COMPLETION-100%25_ALL_OBJECTIVES-FFD700?style=for-the-badge)](#completion)
 
 <br/>
@@ -74,11 +74,12 @@ Upload any PDF, DOCX, or TXT contract. Within seconds, LexGuard extracts every r
 
 </div>
 
-Not a prototype. Not a mockup. Not a demo video. A **live, deployed, production system** on Google Cloud Run — accessible right now:
+Not a prototype. Not a mockup. Not a demo video. A **live, deployed, production system** — accessible right now:
 
-🌐 **Frontend:** [`https://lexguard-frontend-22259513516.us-central1.run.app`](https://lexguard-frontend-22259513516.us-central1.run.app)  
-⚙️ **Backend API:** [`https://lexguard-backend-22259513516.us-central1.run.app`](https://lexguard-backend-22259513516.us-central1.run.app)  
-📊 **Health:** [`/health`](https://lexguard-backend-22259513516.us-central1.run.app/health) · **API Docs:** [`/docs`](https://lexguard-backend-22259513516.us-central1.run.app/docs)
+💻 **GitHub Repository:** [`https://github.com/9059Rohith/openswarm`](https://github.com/9059Rohith/openswarm)<br>
+🌐 **Live Application:** [`https://openswarm.vercel.app/`](https://openswarm.vercel.app/)<br>
+⚙️ **Backend API:** [`https://openswarm.onrender.com/`](https://openswarm.onrender.com/)<br>
+📊 **Health:** [`/health`](https://openswarm.onrender.com/health) · **API Docs:** [`/docs`](https://openswarm.onrender.com/docs)
 
 <br/>
 
@@ -322,8 +323,8 @@ Not a prototype. Not a mockup. Not a demo video. A **live, deployed, production 
 ### Backend
 
 ```bash
-git clone https://github.com/9059Rohith/lexguard.git
-cd lexguard/backend
+git clone https://github.com/9059Rohith/openswarm.git
+cd openswarm/backend
 
 pip install -r requirements.txt
 
@@ -386,7 +387,7 @@ docker run -p 8000:8000 \
 | `POST` | `/api/playbooks` | Create playbook |
 | `GET` | `/health` | Health check |
 
-Full interactive docs at [`/docs`](https://lexguard-backend-22259513516.us-central1.run.app/docs).
+Full interactive docs at [`/docs`](https://openswarm.onrender.com/docs).
 
 <br/>
 
@@ -537,7 +538,7 @@ LexGuard is an AI-powered awareness and analysis tool. It **does not constitute 
 
 **Built for AI Hackathon — Problem Statement 01**
 
-[`Live Frontend`](https://lexguard-frontend-22259513516.us-central1.run.app) · [`API Docs`](https://lexguard-backend-22259513516.us-central1.run.app/docs) · [`Health Check`](https://lexguard-backend-22259513516.us-central1.run.app/health) · [`GitHub`](https://github.com/9059Rohith/lexguard)
+[`Live Application`](https://openswarm.vercel.app/) · [`Backend API`](https://openswarm.onrender.com/) · [`API Docs`](https://openswarm.onrender.com/docs) · [`Health Check`](https://openswarm.onrender.com/health) · [`GitHub`](https://github.com/9059Rohith/openswarm)
 
 <br/>
 
